@@ -1,5 +1,5 @@
 {
-  "name": "ut-codec-8583",
+  "name": "ut-codec-iso8583",
   "version": "6.0.0",
   "main": "./index.js",
   "dependencies": {
@@ -34,7 +34,7 @@
   "description": "UT codec module.",
   "repository": {
     "type": "git",
-    "url": "git@github.com:softwaregroup-bg/ut-codec-8583.git"
+    "url": "git@github.com:softwaregroup-bg/ut-codec-iso8583.git"
   },
   "license": "Apache-2.0"
 }
