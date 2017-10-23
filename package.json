@@ -5,7 +5,7 @@
   "dependencies": {
     "lodash.merge": "4.6.0",
     "ut-bitsyntax": "^6.0.15",
-    "ut-emv": "6.0.0",
+    "ut-emv": "6.1.0",
     "ut-error": "^5.4.9"
   },
   "devDependencies": {
