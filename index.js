@@ -123,13 +123,13 @@ Iso8583.prototype.decode = function(buffer, $meta) {
         } else {
             $meta.opcode = String(message[3] || '').substr(0, 2);
         }
-        $meta.trace = message[11];
+        $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
         if (message.mtid && message.mtid.slice) {
             $meta.mtid = {
                 '0': 'request',
-                '1': (parseInt(message[39]) === 0) ? 'response' : 'error',
+                '1': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
                 '2': 'request',
-                '3': (parseInt(message[39]) === 0) ? 'response' : 'error',
+                '3': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
                 '4': 'notification',
                 '5': 'notification'
             }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
@@ -140,7 +140,7 @@ Iso8583.prototype.decode = function(buffer, $meta) {
             message = err(message);
         }
         if (message[this.emvTagsField]) {
-            message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField])});
+            message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
         }
         return message;
     } else {
@@ -161,18 +161,20 @@ Iso8583.prototype.encode = function(message, $meta, context) {
     /* jshint bitwise: false */
     var buffers = new Array(64 * this.fieldPatterns.length);
     var emptyBuffer = new Buffer([]);
-    var trace = message[11];
-    if (message.emvTags) {
-        message[this.emvTagsField] = emv.encode(message.emvTags);
-    }
-    if (trace === undefined || trace === null) {
-        trace = $meta.trace = ('000000' + context.trace).substr(-6);
-        context.trace += 1;
-        if (context.trace > 999999) {
+    if (message[11]) {
+        message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${message[11]}`.slice(-this.fieldFormat[11].size);
+    } else {
+        context.trace = context.trace || 0;
+        message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${context.trace}`.slice(-this.fieldFormat[11].size);
+        context.trace++;
+        if (context.trace >= Math.pow(10, this.fieldFormat[11].size)) {
             context.trace = 0;
         }
     }
-    message[11] = trace;
+    $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+    if (message.emvTags) {
+        message[this.emvTagsField] = emv.encode(message.emvTags);
+    }
     var bitmaps = Array.apply(null, new Array(8 * this.fieldPatterns.length)).map(Number.prototype.valueOf, 0); // zero filled array
     for (var i = 64 * this.fieldPatterns.length; i >= 0; i -= 1) {
         if (i === 0) {
