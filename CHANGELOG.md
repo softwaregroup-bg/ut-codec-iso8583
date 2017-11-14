@@ -1,3 +1,13 @@
+<a name="6.1.2"></a>
+## [6.1.2](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.1...v6.1.2) (2017-11-13)
+
+
+### Bug Fixes
+
+* enhance stan usability ([#1](https://github.com/softwaregroup-bg/ut-codec-iso8583/issues/1)) ([1053b49](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/1053b49))
+
+
+
 <a name="6.1.1"></a>
 ## [6.1.1](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.0...v6.1.1) (2017-10-24)
 
