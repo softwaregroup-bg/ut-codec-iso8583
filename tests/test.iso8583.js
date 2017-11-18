@@ -1,6 +1,7 @@
 /* eslint no-console:0 */
 
 var Iso8583 = require('../index');
+var defineError = require('ut-error').define;
 var adiff = require('adiff');
 
 function testDecode(decoder, hex) {
@@ -35,6 +36,7 @@ function testDecodeEncode(decoder, hex) {
 }
 
 var powercard = new Iso8583({
+    defineError,
     version: 1,
     fieldFormat: {
         '0': {size: 8, format: 'binary'},
@@ -45,6 +47,7 @@ var powercard = new Iso8583({
 });
 
 var postbridge = new Iso8583({
+    defineError,
     version: 0,
     fieldFormat: {
         '0': {size: 8, format: 'binary'},
@@ -54,6 +57,7 @@ var postbridge = new Iso8583({
 });
 
 var postilion = new Iso8583({
+    defineError,
     version: 0,
     baseEncoding: 'ascii',
     fieldFormat: {
@@ -68,6 +72,7 @@ var postilion = new Iso8583({
     }
 });
 var postilion127 = new Iso8583({
+    defineError,
     version: 0,
     baseEncoding: 'ascii',
     fieldFormat: {

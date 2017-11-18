@@ -1,3 +1,13 @@
+<a name="6.1.3"></a>
+## [6.1.3](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.2...v6.1.3) (2017-11-18)
+
+
+### Bug Fixes
+
+* use defineError passed from port ([0881e75](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/0881e75))
+
+
+
 <a name="6.1.2"></a>
 ## [6.1.2](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.1...v6.1.2) (2017-11-13)
 
