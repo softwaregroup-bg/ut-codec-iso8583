@@ -5,12 +5,12 @@
   "dependencies": {
     "lodash.merge": "4.6.0",
     "ut-bitsyntax": "^6.0.15",
-    "ut-emv": "^6.1.1",
-    "ut-error": "^5.4.9"
+    "ut-emv": "^6.1.1"
   },
   "devDependencies": {
     "adiff": "0.2.13",
-    "ut-tools": "^5.23.2"
+    "ut-error": "^5.4.9",
+    "ut-tools": "^5.29.14"
   },
   "scripts": {
     "lint": "ut-lint .",

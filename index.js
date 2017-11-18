@@ -2,7 +2,6 @@
 var merge = require('lodash.merge');
 var defaultFields = require('./fields');
 var bitSyntax = require('ut-bitsyntax');
-var errors = require('./errors');
 var emv = require('ut-emv');
 
 function getFormat(format, fallback) {
@@ -10,6 +9,10 @@ function getFormat(format, fallback) {
 }
 
 function Iso8583(config) {
+    if (!config.defineError) {
+        throw new Error('Missing config.defineError, check if are you using latest version of ut-port-tcp.');
+    }
+    this.errors = require('./errors')(config.defineError);
     this.networkCodes = Object.assign({
         '001': 'keyChange',
         '002': 'signOff',
@@ -136,7 +139,7 @@ Iso8583.prototype.decode = function(buffer, $meta) {
         }
         $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
         if ($meta.mtid === 'error') {
-            var err = errors['' + message[39]] || errors.generic;
+            var err = this.errors['' + message[39]] || this.errors.generic;
             message = err(message);
         }
         if (message[this.emvTagsField]) {
