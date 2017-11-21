@@ -1,3 +1,13 @@
+<a name="6.1.4"></a>
+## [6.1.4](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.3...v6.1.4) (2017-11-20)
+
+
+### Bug Fixes
+
+* emv tags ([d941081](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/d941081))
+
+
+
 <a name="6.1.3"></a>
 ## [6.1.3](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.2...v6.1.3) (2017-11-18)
 
