@@ -138,12 +138,12 @@ Iso8583.prototype.decode = function(buffer, $meta) {
             }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
         }
         $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
+        if (message[this.emvTagsField]) {
+            message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
+        }
         if ($meta.mtid === 'error') {
             var err = this.errors['' + message[39]] || this.errors.generic;
             message = err(message);
-        }
-        if (message[this.emvTagsField]) {
-            message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
         }
         return message;
     } else {

@@ -2,7 +2,7 @@ function convert(msg) {
     return Object.keys(msg).reduce((prev, current) => {
         prev[(/^[^A-Za-z_]/.test(current) ? 'iso' : '') + current] = msg[current];
         return prev;
-    }, {});
+    }, {iso: msg});
 }
 
 module.exports = defineError => {
