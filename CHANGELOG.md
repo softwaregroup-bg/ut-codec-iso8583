@@ -1,3 +1,15 @@
+<a name="6.1.5"></a>
+## [6.1.5](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.4...v6.1.5) (2017-11-24)
+
+
+### Bug Fixes
+
+* emv ([b996555](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/b996555))
+* enhance stan usability ([826049d](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/826049d))
+* parse emv tags in error response ([0c7d842](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/0c7d842))
+
+
+
 <a name="6.1.4"></a>
 ## [6.1.4](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.3...v6.1.4) (2017-11-20)
 
