@@ -1,3 +1,13 @@
+<a name="6.1.6"></a>
+## [6.1.6](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.5...v6.1.6) (2017-12-05)
+
+
+### Bug Fixes
+
+* fill missing error codes ([#4](https://github.com/softwaregroup-bg/ut-codec-iso8583/issues/4)) ([c971c43](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/c971c43))
+
+
+
 <a name="6.1.5"></a>
 ## [6.1.5](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.4...v6.1.5) (2017-11-24)
 
