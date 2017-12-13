@@ -176,7 +176,7 @@ Iso8583.prototype.encode = function(message, $meta, context) {
     }
     $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
     if (message.emvTags) {
-        message[this.emvTagsField] = emv.tagsEncode(message.emvTags);
+        message[this.emvTagsField] = Buffer.from(emv.tagsEncode(message.emvTags), 'hex');
     }
     var bitmaps = Array.apply(null, new Array(8 * this.fieldPatterns.length)).map(Number.prototype.valueOf, 0); // zero filled array
     for (var i = 64 * this.fieldPatterns.length; i >= 0; i -= 1) {
