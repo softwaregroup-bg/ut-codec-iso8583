@@ -1,3 +1,13 @@
+<a name="6.1.7"></a>
+## [6.1.7](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.6...v6.1.7) (2017-12-13)
+
+
+### Bug Fixes
+
+* make emvTags to be coded when buffer ([b324592](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/b324592))
+
+
+
 <a name="6.1.6"></a>
 ## [6.1.6](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.5...v6.1.6) (2017-12-05)
 
