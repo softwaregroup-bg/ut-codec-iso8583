@@ -1,3 +1,13 @@
+<a name="6.1.9"></a>
+## [6.1.9](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.8...v6.1.9) (2017-12-14)
+
+
+### Bug Fixes
+
+* handle variable sizes properly ([5030bdc](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/5030bdc))
+
+
+
 <a name="6.1.8"></a>
 ## [6.1.8](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.7...v6.1.8) (2017-12-14)
 
