@@ -153,10 +153,23 @@ Iso8583.prototype.decode = function(buffer, $meta) {
 
 Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
     var prefixBuilder = this.prefixBuilders[fieldName];
-    var field = bitSyntax.build(
-        this.fieldBuilders[fieldName],
-        {'field': fieldValue, 'fieldSize': prefixBuilder ? fieldValue.length : this.fieldFormat[fieldName].size}
-    );
+    var builder = this.fieldBuilders[fieldName];
+    var fieldSize;
+    if (!prefixBuilder) {
+        fieldSize = this.fieldFormat[fieldName].size;
+    } else if (fieldValue == null || !fieldValue.toString) {
+        fieldSize = 0;
+    } else if (builder && builder[0] && builder[0].binhex) {
+        fieldSize = Buffer.byteLength(fieldValue, 'hex');
+    } else if (builder && builder[0] && builder[0].hexbin) {
+        fieldSize = Buffer.byteLength(fieldValue, 'utf-8') * 2;
+    } else {
+        fieldSize = fieldValue.toString().length;
+    }
+    var field = bitSyntax.build(builder, {
+        field: fieldValue,
+        fieldSize
+    });
     return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {'prefix': field.length}), field]) : field;
 };
 
