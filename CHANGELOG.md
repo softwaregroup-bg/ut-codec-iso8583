@@ -1,3 +1,13 @@
+<a name="6.1.8"></a>
+## [6.1.8](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.7...v6.1.8) (2017-12-14)
+
+
+### Bug Fixes
+
+* revert ([a584720](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/a584720))
+
+
+
 <a name="6.1.7"></a>
 ## [6.1.7](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.6...v6.1.7) (2017-12-13)
 
