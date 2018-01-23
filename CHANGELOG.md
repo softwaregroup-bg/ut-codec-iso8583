@@ -1,3 +1,13 @@
+<a name="6.1.10"></a>
+## [6.1.10](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.9...v6.1.10) (2018-01-23)
+
+
+### Bug Fixes
+
+* handle parse error ([#6](https://github.com/softwaregroup-bg/ut-codec-iso8583/issues/6)) ([d333a1f](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/d333a1f))
+
+
+
 <a name="6.1.9"></a>
 ## [6.1.9](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.8...v6.1.9) (2017-12-14)
 
