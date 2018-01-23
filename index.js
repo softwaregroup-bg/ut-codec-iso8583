@@ -73,6 +73,7 @@ Iso8583.prototype.fieldSizes = function(bitmap, start) {
 Iso8583.prototype.decode = function(buffer, $meta) {
     var frame = this.framePattern(buffer);
     var bitmapField = 0;
+    var internalError = false;
     if (frame) {
         var message = {'header': frame.header, 'mtid': frame.mtid, '0': frame.field0};
         var parsedLength = buffer.length - frame.rest.length;
@@ -139,10 +140,16 @@ Iso8583.prototype.decode = function(buffer, $meta) {
         }
         $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
         if (message[this.emvTagsField]) {
-            message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
+            try {
+                message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
+            } catch (e) {
+                $meta.mtid = 'error';
+                internalError = this.errors.parser;
+                message.errorStack = e;
+            }
         }
         if ($meta.mtid === 'error') {
-            var err = this.errors['' + message[39]] || this.errors.generic;
+            var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
             message = err(message);
         }
         return message;
