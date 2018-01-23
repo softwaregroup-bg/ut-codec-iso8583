@@ -72,11 +72,12 @@ Iso8583.prototype.fieldSizes = function(bitmap, start) {
 
 Iso8583.prototype.decode = function(buffer, $meta) {
     var internalError = false;
+    var message = {};
     try {
         var frame = this.framePattern(buffer);
         var bitmapField = 0;
         if (frame) {
-            var message = {'header': frame.header, 'mtid': frame.mtid, '0': frame.field0};
+            message = {'header': frame.header, 'mtid': frame.mtid, '0': frame.field0};
             var parsedLength = buffer.length - frame.rest.length;
             var group = 0;
             while (frame) {
@@ -159,6 +160,7 @@ Iso8583.prototype.decode = function(buffer, $meta) {
         }
     } catch (e) {
         $meta.mtid = 'error';
+        message.errorStack = e;
         message = this.errors.parser(message);
         return message;
     }
