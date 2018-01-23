@@ -10,8 +10,10 @@ module.exports = defineError => {
     const errors0 = require('./iso0').errors;
     const errors1 = require('./iso1').errors;
     const Generic = defineError('generic', Iso, 'generic error');
+    const Parser = defineError('parser', Iso, 'parser error');
     let result = {
-        generic: cause => new Generic(convert(cause))
+        generic: cause => new Generic(convert(cause)),
+        parser: cause => new Parser(convert(cause))
     };
     var iterate = errors => Object.keys(errors).forEach(name => {
         var Err = defineError(name, Iso, errors[name]);

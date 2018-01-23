@@ -71,83 +71,98 @@ Iso8583.prototype.fieldSizes = function(bitmap, start) {
 };
 
 Iso8583.prototype.decode = function(buffer, $meta) {
-    var frame = this.framePattern(buffer);
-    var bitmapField = 0;
-    if (frame) {
-        var message = {'header': frame.header, 'mtid': frame.mtid, '0': frame.field0};
-        var parsedLength = buffer.length - frame.rest.length;
-        var group = 0;
-        while (frame) {
-            var fieldPattern = this.fieldPatterns[group];
-            if (!fieldPattern) {
-                if (frame.rest && frame.rest.length) {
-                    if (this.fieldFormat.footer && this.fieldFormat.footer.size) {
-                        frame = this.footerMatcher(frame.rest || Buffer.alloc(0));
-                        message.footer = frame && frame.footer;
-                    }
+    var internalError = false;
+    var message = {};
+    try {
+        var frame = this.framePattern(buffer);
+        var bitmapField = 0;
+        if (frame) {
+            message = {'header': frame.header, 'mtid': frame.mtid, '0': frame.field0};
+            var parsedLength = buffer.length - frame.rest.length;
+            var group = 0;
+            while (frame) {
+                var fieldPattern = this.fieldPatterns[group];
+                if (!fieldPattern) {
                     if (frame.rest && frame.rest.length) {
-                        throw new Error('Not all data was parsed. Remaining ' + frame.rest.length + ' bytes at offset ' + parsedLength +
-                        ' starting with 0x' + frame.rest.toString('hex') + '\r\nmessage:' + JSON.stringify(message));
-                    }
-                }
-                break;
-            }
-            var fieldSizes = this.fieldSizes(frame['field' + bitmapField], group * 64 + 1);
-            var rest = frame.rest;
-            frame = fieldPattern && fieldPattern(rest, fieldSizes);
-            if (!frame && fieldPattern) {
-                for (var failField = (group + 1) * 64; failField >= group * 64 + 1; failField -= 1) { // find at which field we failed by skipping fields from the end
-                    fieldSizes['field' + failField + 'Size'] = 0;
-                    frame = fieldPattern && fieldPattern(rest, fieldSizes);
-                    if (frame && frame.rest && frame.rest.length && this.fieldFormat.footer && this.fieldFormat.footer.size) {
-                        frame = this.footerMatcher(frame.rest || Buffer.alloc(0));
-                        message.footer = frame && frame.footer;
-                    }
-                    if (frame) {
-                        parsedLength += rest.length - frame.rest.length;
-                        throw new Error('Parsing failed at field ' + failField + '. Remaining ' + frame.rest.length + ' bytes at offset ' + parsedLength +
+                        if (this.fieldFormat.footer && this.fieldFormat.footer.size) {
+                            frame = this.footerMatcher(frame.rest || Buffer.alloc(0));
+                            message.footer = frame && frame.footer;
+                        }
+                        if (frame.rest && frame.rest.length) {
+                            throw new Error('Not all data was parsed. Remaining ' + frame.rest.length + ' bytes at offset ' + parsedLength +
                             ' starting with 0x' + frame.rest.toString('hex') + '\r\nmessage:' + JSON.stringify(message));
+                        }
+                    }
+                    break;
+                }
+                var fieldSizes = this.fieldSizes(frame['field' + bitmapField], group * 64 + 1);
+                var rest = frame.rest;
+                frame = fieldPattern && fieldPattern(rest, fieldSizes);
+                if (!frame && fieldPattern) {
+                    for (var failField = (group + 1) * 64; failField >= group * 64 + 1; failField -= 1) { // find at which field we failed by skipping fields from the end
+                        fieldSizes['field' + failField + 'Size'] = 0;
+                        frame = fieldPattern && fieldPattern(rest, fieldSizes);
+                        if (frame && frame.rest && frame.rest.length && this.fieldFormat.footer && this.fieldFormat.footer.size) {
+                            frame = this.footerMatcher(frame.rest || Buffer.alloc(0));
+                            message.footer = frame && frame.footer;
+                        }
+                        if (frame) {
+                            parsedLength += rest.length - frame.rest.length;
+                            throw new Error('Parsing failed at field ' + failField + '. Remaining ' + frame.rest.length + ' bytes at offset ' + parsedLength +
+                                ' starting with 0x' + frame.rest.toString('hex') + '\r\nmessage:' + JSON.stringify(message));
+                        }
+                    }
+                    throw new Error('Parsing failed at unknown field');
+                }
+                parsedLength += rest.length - frame.rest.length;
+                bitmapField = group * 64 + 1;
+                for (var fieldNo = group * 64 + 1; fieldNo <= (group + 1) * 64; fieldNo += 1) {
+                    if (fieldSizes['field' + fieldNo + 'Size']) {
+                        message[fieldNo] = frame['field' + fieldNo];
                     }
                 }
-                throw new Error('Parsing failed at unknown field');
+                group += 1;
             }
-            parsedLength += rest.length - frame.rest.length;
-            bitmapField = group * 64 + 1;
-            for (var fieldNo = group * 64 + 1; fieldNo <= (group + 1) * 64; fieldNo += 1) {
-                if (fieldSizes['field' + fieldNo + 'Size']) {
-                    message[fieldNo] = frame['field' + fieldNo];
+            if (message.mtid === '0800' || message.mtid === '0810') {
+                $meta.opcode = String(message[70] || '');
+                $meta.opcode = this.networkCodes[$meta.opcode] || $meta.opcode;
+            } else {
+                $meta.opcode = String(message[3] || '').substr(0, 2);
+            }
+            $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+            if (message.mtid && message.mtid.slice) {
+                $meta.mtid = {
+                    '0': 'request',
+                    '1': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
+                    '2': 'request',
+                    '3': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
+                    '4': 'notification',
+                    '5': 'notification'
+                }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
+            }
+            $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
+            if (message[this.emvTagsField]) {
+                try {
+                    message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
+                } catch (e) {
+                    $meta.mtid = 'error';
+                    internalError = this.errors.parser;
+                    message.errorStack = e;
                 }
             }
-            group += 1;
-        }
-        if (message.mtid === '0800' || message.mtid === '0810') {
-            $meta.opcode = String(message[70] || '');
-            $meta.opcode = this.networkCodes[$meta.opcode] || $meta.opcode;
+            if ($meta.mtid === 'error') {
+                var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
+                message = err(message);
+            }
+            return message;
         } else {
-            $meta.opcode = String(message[3] || '').substr(0, 2);
+            throw new Error('Unable to parse message type or first bitmap!');
         }
-        $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
-        if (message.mtid && message.mtid.slice) {
-            $meta.mtid = {
-                '0': 'request',
-                '1': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
-                '2': 'request',
-                '3': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
-                '4': 'notification',
-                '5': 'notification'
-            }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
-        }
-        $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
-        if (message[this.emvTagsField]) {
-            message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
-        }
-        if ($meta.mtid === 'error') {
-            var err = this.errors['' + message[39]] || this.errors.generic;
-            message = err(message);
-        }
+    } catch (e) {
+        $meta.mtid = 'error';
+        message.errorStack = e;
+        message = this.errors.parser(message);
         return message;
-    } else {
-        throw new Error('Unable to parse message type or first bitmap!');
     }
 };
 
