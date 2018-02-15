@@ -1,3 +1,13 @@
+<a name="6.1.11"></a>
+## [6.1.11](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.10...v6.1.11) (2018-02-15)
+
+
+### Bug Fixes
+
+* dependencies ([6728144](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/6728144))
+
+
+
 <a name="6.1.10"></a>
 ## [6.1.10](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.9...v6.1.10) (2018-01-23)
 
