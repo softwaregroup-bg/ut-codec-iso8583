@@ -22,6 +22,7 @@
     "precommit": "ut-precommit",
     "prepublish": "ut-prepublish",
     "prepush": "ut-prepush",
+    "precover": "ut-precover",
     "pretest": "ut-pretest",
     "preversion": "ut-preversion",
     "test": "ut-test",
