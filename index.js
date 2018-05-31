@@ -182,8 +182,10 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
                 message = err(message);
             }
-            let bufferMasked = decodeBufferMask(buffer, message);
-            log && log.trace && log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: bufferMasked, log: context && context.session && context.session.log});
+            if (log && log.trace) {
+                let bufferMasked = decodeBufferMask(buffer, message);
+                log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: bufferMasked, log: context && context.session && context.session.log});
+            }
             return message;
         } else {
             throw new Error('Unable to parse message type or first bitmap!');
@@ -264,8 +266,10 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
         buffers.push(this.encodeField('footer', message.footer || Buffer.alloc(this.fieldFormat.footer.size)));
     }
     let buffer = Buffer.concat(buffers);
-    let bufferMasked = encodeBufferMask(buffer, message);
-    log && log.trace && log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: bufferMasked, log: context && context.session && context.session.log});
+    if (log && log.trace) {
+        let bufferMasked = encodeBufferMask(buffer, message);
+        log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: bufferMasked, log: context && context.session && context.session.log});
+    }
     return buffer;
 };
 
