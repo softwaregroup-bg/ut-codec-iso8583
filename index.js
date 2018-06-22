@@ -23,7 +23,7 @@ const decodeBufferMask = (maskFields) => (buffer, messageParsed) => {
 
     if (maskList.length) { // TODO: set some emv default field
         var newBuffer = maskList.reduce((a, cur) => {
-            return a.split(cur).join((new Array(cur.length)).fill(maskSymbol).join(''));
+            return a.split(cur).join((new Array(cur.length / 2)).fill(maskSymbol).join(''));
         }, buffer.toString('hex'));
 
         return Buffer.from(newBuffer, 'hex');
@@ -35,7 +35,7 @@ const encodeBufferMask = (maskFields) => (buffer, message) => {
     var maskList = getMaskList(maskFields, message);
     if (maskList.length) {
         var newBuffer = maskList.reduce((a, cur) => {
-            return a.split(cur).join((new Array(cur.length)).fill(maskSymbol).join(''));
+            return a.split(cur).join((new Array(cur.length / 2)).fill(maskSymbol).join(''));
         }, buffer.toString('hex'));
 
         return Buffer.from(newBuffer, 'hex');
