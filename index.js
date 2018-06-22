@@ -3,18 +3,27 @@ var merge = require('lodash.merge');
 var defaultFields = require('./fields');
 var bitSyntax = require('ut-bitsyntax');
 var emv = require('ut-emv');
+const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
 
 function getFormat(format, fallback) {
     return (format && {'numeric': 'string-left-zero', 'string': 'string-right-space', 'amount': 'string-left-zero', 'bcdamount': 'string'}[format]) || format || fallback || 'binary';
 }
 
-const decodeBufferMask = (buffer, messageParsed) => {
-    if (messageParsed && messageParsed['2']) { // TODO: set some emv default field
-        var maskList = [
-            Buffer.from(messageParsed['2'], 'ascii').toString('hex')
-        ];
+const getMaskList = (arr, objArr) => {
+    return arr
+        .filter((v) => objArr[v])
+        .map((v) =>
+            Buffer.from(objArr[v], 'ascii')
+            .toString('hex')
+        );
+};
+
+const decodeBufferMask = (maskFields) => (buffer, messageParsed) => {
+    var maskList = getMaskList(maskFields, messageParsed);
+
+    if (maskList.length) { // TODO: set some emv default field
         var newBuffer = maskList.reduce((a, cur) => {
-            return a.split(cur).join((new Array(cur.length)).fill('*').join(''));
+            return a.split(cur).join((new Array(cur.length)).fill(maskSymbol).join(''));
         }, buffer.toString('hex'));
 
         return Buffer.from(newBuffer, 'hex');
@@ -22,13 +31,11 @@ const decodeBufferMask = (buffer, messageParsed) => {
     return buffer;
 };
 
-const encodeBufferMask = (buffer, message) => {
-    if (message && message['2']) {
-        var maskList = [
-            Buffer.from(message['2'], 'ascii').toString('hex')
-        ];
+const encodeBufferMask = (maskFields) => (buffer, message) => {
+    var maskList = getMaskList(maskFields, message);
+    if (maskList.length) {
         var newBuffer = maskList.reduce((a, cur) => {
-            return a.split(cur).join((new Array(cur.length)).fill('*').join(''));
+            return a.split(cur).join((new Array(cur.length)).fill(maskSymbol).join(''));
         }, buffer.toString('hex'));
 
         return Buffer.from(newBuffer, 'hex');
@@ -41,6 +48,8 @@ function Iso8583(config) {
         throw new Error('Missing config.defineError, check if are you using latest version of ut-port-tcp.');
     }
     this.errors = require('./errors')(config.defineError);
+    this.decodeBufferMask = decodeBufferMask(['2']);
+    this.encodeBufferMask = encodeBufferMask(['2']);
     this.networkCodes = Object.assign({
         '001': 'keyChange',
         '002': 'signOff',
@@ -183,7 +192,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 message = err(message);
             }
             if (log && log.trace) {
-                let bufferMasked = decodeBufferMask(buffer, message);
+                let bufferMasked = this.decodeBufferMask(buffer, message);
                 log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: bufferMasked, log: context && context.session && context.session.log});
             }
             return message;
@@ -267,7 +276,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     }
     let buffer = Buffer.concat(buffers);
     if (log && log.trace) {
-        let bufferMasked = encodeBufferMask(buffer, message);
+        let bufferMasked = this.encodeBufferMask(buffer, message);
         log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: bufferMasked, log: context && context.session && context.session.log});
     }
     return buffer;
