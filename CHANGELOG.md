@@ -1,3 +1,13 @@
+<a name="6.2.0"></a>
+# [6.2.0](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.11...v6.2.0) (2018-09-17)
+
+
+### Bug Fixes
+
+* mask some object properties ([465cebe](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/465cebe))
+
+
+
 <a name="6.1.11"></a>
 ## [6.1.11](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.1.10...v6.1.11) (2018-02-15)
 
