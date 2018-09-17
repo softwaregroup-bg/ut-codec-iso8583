@@ -3,16 +3,53 @@ var merge = require('lodash.merge');
 var defaultFields = require('./fields');
 var bitSyntax = require('ut-bitsyntax');
 var emv = require('ut-emv');
+const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
 
 function getFormat(format, fallback) {
     return (format && {'numeric': 'string-left-zero', 'string': 'string-right-space', 'amount': 'string-left-zero', 'bcdamount': 'string'}[format]) || format || fallback || 'binary';
 }
+
+const getMaskList = (arr, objArr) => {
+    return arr
+        .filter((v) => objArr[v])
+        .map((v) =>
+            Buffer.from(objArr[v], 'ascii')
+            .toString('hex')
+        );
+};
+
+const decodeBufferMask = (maskFields) => (buffer, messageParsed) => {
+    var maskList = getMaskList(maskFields, messageParsed);
+
+    if (maskList.length) { // TODO: set some emv default field
+        var newBuffer = maskList.reduce((a, cur) => {
+            return a.split(cur).join((new Array(cur.length / 2)).fill(maskSymbol).join(''));
+        }, buffer.toString('hex'));
+
+        return Buffer.from(newBuffer, 'hex');
+    }
+    return buffer;
+};
+
+const encodeBufferMask = (maskFields) => (buffer, message) => {
+    var maskList = getMaskList(maskFields, message);
+    if (maskList.length) {
+        var newBuffer = maskList.reduce((a, cur) => {
+            return a.split(cur).join((new Array(cur.length / 2)).fill(maskSymbol).join(''));
+        }, buffer.toString('hex'));
+
+        return Buffer.from(newBuffer, 'hex');
+    }
+    return buffer;
+};
 
 function Iso8583(config) {
     if (!config.defineError) {
         throw new Error('Missing config.defineError, check if are you using latest version of ut-port-tcp.');
     }
     this.errors = require('./errors')(config.defineError);
+    this.decodeBufferMask = decodeBufferMask(['2']);
+    this.encodeBufferMask = encodeBufferMask(['2']);
     this.networkCodes = Object.assign({
         '001': 'keyChange',
         '002': 'signOff',
@@ -70,7 +107,7 @@ Iso8583.prototype.fieldSizes = function(bitmap, start) {
     return result;
 };
 
-Iso8583.prototype.decode = function(buffer, $meta) {
+Iso8583.prototype.decode = function(buffer, $meta, context, log) {
     var internalError = false;
     var message = {};
     try {
@@ -154,6 +191,10 @@ Iso8583.prototype.decode = function(buffer, $meta) {
                 var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
                 message = err(message);
             }
+            if (log && log.trace) {
+                let bufferMasked = this.decodeBufferMask(buffer, message);
+                log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: bufferMasked, log: context && context.session && context.session.log});
+            }
             return message;
         } else {
             throw new Error('Unable to parse message type or first bitmap!');
@@ -188,7 +229,7 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
     return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {'prefix': field.length}), field]) : field;
 };
 
-Iso8583.prototype.encode = function(message, $meta, context) {
+Iso8583.prototype.encode = function(message, $meta, context, log) {
     /* jshint bitwise: false */
     var buffers = new Array(64 * this.fieldPatterns.length);
     var emptyBuffer = new Buffer([]);
@@ -233,8 +274,12 @@ Iso8583.prototype.encode = function(message, $meta, context) {
     if (this.fieldFormat.footer && this.fieldFormat.footer.size) {
         buffers.push(this.encodeField('footer', message.footer || Buffer.alloc(this.fieldFormat.footer.size)));
     }
-
-    return Buffer.concat(buffers);
+    let buffer = Buffer.concat(buffers);
+    if (log && log.trace) {
+        let bufferMasked = this.encodeBufferMask(buffer, message);
+        log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: bufferMasked, log: context && context.session && context.session.log});
+    }
+    return buffer;
 };
 
 module.exports = Iso8583;
