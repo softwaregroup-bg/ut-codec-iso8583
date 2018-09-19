@@ -1,26 +1,16 @@
-function convert(msg) {
-    return Object.keys(msg).reduce((prev, current) => {
-        prev[(/^[^A-Za-z_]/.test(current) ? 'iso' : '') + current] = msg[current];
-        return prev;
-    }, {iso: msg});
-}
+module.exports = ({ defineError, getError, fetchErrors }) => {
+    if (!getError('iso8583')) {
+        const Iso = defineError('iso8583', null, 'ISO 8583 error');
+        defineError('generic', Iso, 'Generic error');
+        defineError('parser', Iso, 'Parser error');
 
-module.exports = defineError => {
-    const Iso = defineError('iso8583');
-    const errors0 = require('./iso0').errors;
-    const errors1 = require('./iso1').errors;
-    const Generic = defineError('generic', Iso, 'generic error');
-    const Parser = defineError('parser', Iso, 'parser error');
-    let result = {
-        generic: cause => new Generic(convert(cause)),
-        parser: cause => new Parser(convert(cause))
-    };
-    var iterate = errors => Object.keys(errors).forEach(name => {
-        var Err = defineError(name, Iso, errors[name]);
-        result[name] = cause => new Err(convert(cause));
-    });
+        const iterate = errors => Object.keys(errors).forEach(name => {
+            defineError(name, Iso, errors[name]);
+        });
 
-    iterate(errors0);
-    iterate(errors1);
-    return result;
+        iterate(require('./iso0').errors);
+        iterate(require('./iso1').errors);
+    }
+
+    return fetchErrors('iso8583');
 };
