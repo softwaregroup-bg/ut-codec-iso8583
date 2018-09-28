@@ -5,6 +5,13 @@ var bitSyntax = require('ut-bitsyntax');
 var emv = require('ut-emv');
 const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
 
+function convertError(msg) {
+    return Object.keys(msg).reduce((prev, current) => {
+        prev[(/^[^A-Za-z_]/.test(current) ? 'iso' : '') + current] = msg[current];
+        return prev;
+    }, {iso: msg});
+}
+
 function getFormat(format, fallback) {
     return (format && {'numeric': 'string-left-zero', 'string': 'string-right-space', 'amount': 'string-left-zero', 'bcdamount': 'string'}[format]) || format || fallback || 'binary';
 }
@@ -47,7 +54,13 @@ function Iso8583(config) {
     if (!config.defineError) {
         throw new Error('Missing config.defineError, check if are you using latest version of ut-port-tcp.');
     }
-    this.errors = require('./errors')(config.defineError);
+    if (!config.getError) {
+        throw new Error('Missing config.getError, check if are you using latest version of ut-port-tcp.');
+    }
+    if (!config.fetchErrors) {
+        throw new Error('Missing config.fetchErrors, check if are you using latest version of ut-port-tcp.');
+    }
+    this.errors = require('./errors')(config);
     this.decodeBufferMask = decodeBufferMask(['2']);
     this.encodeBufferMask = encodeBufferMask(['2']);
     this.networkCodes = Object.assign({
@@ -183,13 +196,13 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                     message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
                 } catch (e) {
                     $meta.mtid = 'error';
-                    internalError = this.errors.parser;
+                    internalError = this.errors['iso8583.parser'];
                     message.errorStack = e;
                 }
             }
             if ($meta.mtid === 'error') {
-                var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
-                message = err(message);
+                var err = internalError || (this.errors[`iso8583.${message[39]}`] || this.errors['iso8583.generic']);
+                message = err(convertError(message));
             }
             if (log && log.trace) {
                 let bufferMasked = this.decodeBufferMask(buffer, message);
@@ -202,7 +215,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
     } catch (e) {
         $meta.mtid = 'error';
         message.errorStack = e;
-        message = this.errors.parser(message);
+        message = this.errors['iso8583.parser'](convertError(message));
         return message;
     }
 };
