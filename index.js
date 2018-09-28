@@ -206,7 +206,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             }
             if (log && log.trace) {
                 let bufferMasked = this.decodeBufferMask(buffer, message);
-                log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: bufferMasked, log: context && context.session && context.session.log});
+                log.trace({$meta: {mtid: 'frame', method: 'iso8583.decode'}, message: bufferMasked, log: context && context.session && context.session.log});
             }
             return message;
         } else {
@@ -290,7 +290,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     let buffer = Buffer.concat(buffers);
     if (log && log.trace) {
         let bufferMasked = this.encodeBufferMask(buffer, message);
-        log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: bufferMasked, log: context && context.session && context.session.log});
+        log.trace({$meta: {mtid: 'frame', method: 'iso8583.encode'}, message: bufferMasked, log: context && context.session && context.session.log});
     }
     return buffer;
 };
