@@ -124,6 +124,10 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
     var internalError = false;
     var message = {};
     try {
+        if (log && log.trace) {
+            let bufferMasked = this.decodeBufferMask(buffer, message);
+            log.trace({$meta: {mtid: 'frame', method: 'iso8583.decode'}, message: bufferMasked, log: context && context.session && context.session.log});
+        }
         var frame = this.framePattern(buffer);
         var bitmapField = 0;
         if (frame) {
@@ -203,10 +207,6 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             if ($meta.mtid === 'error') {
                 var err = internalError || (this.errors[`iso8583.${message[39]}`] || this.errors['iso8583.generic']);
                 message = err(convertError(message));
-            }
-            if (log && log.trace) {
-                let bufferMasked = this.decodeBufferMask(buffer, message);
-                log.trace({$meta: {mtid: 'frame', method: 'iso8583.decode'}, message: bufferMasked, log: context && context.session && context.session.log});
             }
             return message;
         } else {
