@@ -3,19 +3,20 @@
   "version": "7.0.0-rc-dss.0",
   "main": "./index.js",
   "dependencies": {
-    "lodash.merge": "4.6.0",
+    "lodash.merge": "4.6.1",
     "ut-bitsyntax": "^6.0.15",
-    "ut-emv": "^6.1.2"
+    "ut-emv": "^7.0.0-rc-dss.0"
   },
   "devDependencies": {
-    "ut-tools": "^5.29.14"
+    "tap": "^10.7.3",
+    "ut-tools": "^6.2.2"
   },
   "scripts": {
     "lint": "ut-lint .",
     "release": "ut-release",
     "changelog": "ut-changelog",
     "check": "ut-check",
-    "cover": "ut-cover",
+    "cover": "ut-cover-parallel",
     "lint-js": "ut-lint-js .",
     "postpublish": "ut-postpublish",
     "postversion": "ut-postversion",
@@ -25,7 +26,7 @@
     "precover": "ut-precover",
     "pretest": "ut-pretest",
     "preversion": "ut-preversion",
-    "test": "ut-test",
+    "test": "ut-test-parallel",
     "version": "ut-version",
     "jenkins": "ut-jenkins",
     "gitlab": "ut-gitlab"
