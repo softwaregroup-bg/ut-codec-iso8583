@@ -8,7 +8,7 @@
     "ut-emv": "^7.0.0-rc-dss.0"
   },
   "devDependencies": {
-    "tap": "^10.7.3",
+    "tap": "^12.0.1",
     "ut-tools": "^6.2.2"
   },
   "scripts": {
