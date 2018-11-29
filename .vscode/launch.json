@@ -5,7 +5,7 @@
             "type": "node",
             "request": "launch",
             "name": "unit test",
-            "program": "${workspaceFolder}/test/unit/cases/encode.js",
+            "program": "${workspaceFolder}/test/unit/cases/encodeProperData.js",
             "runtimeArgs": [
                 "--preserve-symlinks",
                 "--nolazy",
