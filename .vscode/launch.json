@@ -4,8 +4,8 @@
             {
             "type": "node",
             "request": "launch",
-            "name": "unit test",
-            "program": "${workspaceFolder}/test/unit/cases/encodeProperData.js",
+            "name": "Single test",
+            "program": "${workspaceFolder}/test/unit/cases/encoding.js",
             "runtimeArgs": [
                 "--preserve-symlinks",
                 "--nolazy",
@@ -17,6 +17,34 @@
             },
             "windows": {
                 "outputCapture": "std",
+                "protocol": "inspector"
+            }
+        },
+        {
+            "name": "Unit tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/tap/bin/run.js",
+            "stopOnEntry": false,
+            "args": [
+                "-J",
+                "-T",
+                "--node-arg=--preserve-symlinks",
+                "test/unit/cases"
+            ],
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": null,
+            "runtimeExecutable": null,
+            "runtimeArgs": [
+                "--nolazy"
+            ],
+            "env": {
+                "UT_ENV": "test",
+                "NODE_PATH": "${workspaceRoot}/dev"
+            },
+            "sourceMaps": false,
+            "outputCapture": "std",
+            "linux": {
                 "protocol": "inspector"
             }
         }
