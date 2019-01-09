@@ -205,9 +205,8 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 var err = internalError || (this.errors[`iso8583.${message[39]}`] || this.errors['iso8583.generic']);
                 message = err(convertError(message));
             }
-            if (message[128] || message[64]) {
-                message.rawData = Buffer.concat([buffer.slice(0, -16), Buffer.from('0'.repeat(16))]);
-            }
+            // for mac verify
+            message.rawData = buffer;
 
             return message;
         } else {
