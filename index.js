@@ -48,8 +48,8 @@ function Iso8583(config) {
         throw new Error('Missing config.defineError, check if are you using latest version of ut-port-tcp.');
     }
     this.errors = require('./errors')(config.defineError);
-    this.decodeBufferMask = decodeBufferMask(['2']);
-    this.encodeBufferMask = encodeBufferMask(['2']);
+    this.decodeBufferMask = decodeBufferMask(['2', '35', '52', '102', '103']);
+    this.encodeBufferMask = encodeBufferMask(['2', '35', '52', '102', '103']);
     this.networkCodes = Object.assign({
         '001': 'keyChange',
         '002': 'signOff',
