@@ -87,8 +87,9 @@ function Iso8583(config) {
         for (var i = 1; i <= 64; i += 1) {
             var field = group * 64 + i;
             if (this.fieldFormat[field].prefixSize) { // if the field is with variable size
+                let factor = this.fieldFormat[field].prefixFactor;
                 pattern.push('prefix' + field + ':field' + field + 'Size/' + getFormat(this.fieldFormat[field].prefixFormat, 'string-left-zero') +
-                    ', field' + field + ':prefix' + field + '/' + getFormat(this.fieldFormat[field].format));
+                    ', field' + field + ':prefix' + field + '/' + getFormat(this.fieldFormat[field].format) + (factor ? '-unit:' + (8 / factor) : ''));
                 this.prefixBuilders.push(bitSyntax.parse('prefix:' + this.fieldFormat[field].prefixSize + '/' +
                     getFormat(this.fieldFormat[field].prefixFormat, 'string-left-zero')));
             } else { // if the field is with fixed size
@@ -239,7 +240,8 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
         field: fieldValue,
         fieldSize
     });
-    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {'prefix': field.length}), field]) : field;
+    let factor = this.fieldFormat[fieldName].prefixFactor || 1;
+    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {'prefix': field.length * factor}), field]) : field;
 };
 
 Iso8583.prototype.encode = function(message, $meta, context, log) {
