@@ -4,8 +4,8 @@
   "main": "./index.js",
   "dependencies": {
     "lodash.merge": "4.6.1",
-    "ut-bitsyntax": "^6.0.17",
-    "ut-emv": "^7.0.0-rc-dss.2"
+    "ut-bitsyntax": "^6.2.0",
+    "ut-emv": "^7.0.0-rc-dss.5"
   },
   "devDependencies": {
     "tap": "^12.5.2",
