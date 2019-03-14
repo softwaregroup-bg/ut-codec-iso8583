@@ -4,7 +4,7 @@
   "main": "./index.js",
   "dependencies": {
     "lodash.merge": "4.6.1",
-    "ut-bitsyntax": "^6.2.0",
+    "ut-bitsyntax": "^6.2.1",
     "ut-emv": "^7.0.0-rc-dss.5"
   },
   "devDependencies": {
