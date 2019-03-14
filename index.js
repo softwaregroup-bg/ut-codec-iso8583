@@ -248,9 +248,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     /* jshint bitwise: false */
     var buffers = new Array(64 * this.fieldPatterns.length);
     var emptyBuffer = Buffer.alloc(0);
-    if (message[11]) {
-        message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${message[11]}`.slice(-this.fieldFormat[11].size);
-    } else {
+    if (!message[11]) {
         context.trace = context.trace || 0;
         message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${context.trace}`.slice(-this.fieldFormat[11].size);
         context.trace++;
