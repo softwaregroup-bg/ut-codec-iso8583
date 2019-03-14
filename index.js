@@ -69,6 +69,7 @@ function Iso8583(config) {
         '301': 'echo'
     }, config.networkCodes);
     this.emvTagsField = config.emvTagsField || 55;
+    this.successResponseIdentifier = config.successResponseIdentifier || '00';
     this.fieldFormat = merge({}, defaultFields[(config.version || '0') + (config.baseEncoding || 'ascii')], config.fieldFormat);
     this.framePattern = bitSyntax.matcher('header:' + this.fieldFormat.header.size + '/' + getFormat(this.fieldFormat.header.format) +
         ', mtid:' + this.fieldFormat.mtid.size + '/' + getFormat(this.fieldFormat.mtid.format) +
@@ -185,9 +186,9 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             if (message.mtid && message.mtid.slice) {
                 $meta.mtid = {
                     '0': 'request',
-                    '1': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
+                    '1': message[39] === this.successResponseIdentifier ? 'response' : 'error',
                     '2': 'request',
-                    '3': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
+                    '3': message[39] === this.successResponseIdentifier ? 'response' : 'error',
                     '4': 'notification',
                     '5': 'notification'
                 }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
