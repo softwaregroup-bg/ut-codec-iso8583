@@ -186,9 +186,13 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             if (message.mtid && message.mtid.slice) {
                 $meta.mtid = {
                     '0': 'request',
-                    '1': message[39] === this.successResponseIdentifier ? 'response' : 'error',
+                    '1': (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
+                        ? 'response'
+                        : 'error',
                     '2': 'request',
-                    '3': message[39] === this.successResponseIdentifier ? 'response' : 'error',
+                    '3': (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
+                        ? 'response'
+                        : 'error',
                     '4': 'notification',
                     '5': 'notification'
                 }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
