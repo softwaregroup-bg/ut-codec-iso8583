@@ -18,8 +18,15 @@ function getFormat(format, fallback) {
 
 const getMaskList = (arr, objArr) => {
     return arr
-        .filter((v) => objArr[v])
-        .map((v) => Buffer.from(objArr[v], 'ascii').toString('hex'));
+        .filter((v) => objArr[v.split(':').shift()])
+        .map((v) => {
+            let enc = 'ascii';
+            if (v.endsWith(':hex')) {
+                enc = 'hex';
+                v = v.split(':').shift();
+            }
+            return Buffer.from(objArr[v], enc).toString('hex');
+        });
 };
 
 const decodeBufferMask = (maskFields) => (buffer, messageParsed) => {
