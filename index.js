@@ -187,13 +187,13 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                     message.errorStack = e;
                 }
             }
-            if ($meta.mtid === 'error') {
-                var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
-                message = err(message);
-            }
             if (log && log.trace) {
                 let bufferMasked = this.decodeBufferMask(buffer, message);
                 log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: bufferMasked, log: context && context.session && context.session.log});
+            }
+            if ($meta.mtid === 'error') {
+                var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
+                message = err(message);
             }
             return message;
         } else {
