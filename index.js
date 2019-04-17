@@ -2,7 +2,6 @@
 var merge = require('lodash.merge');
 var defaultFields = require('./fields');
 var bitSyntax = require('ut-bitsyntax');
-var emv = require('ut-emv');
 const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
 
 function convertError(msg) {
@@ -76,7 +75,7 @@ function Iso8583(config) {
         '201': 'cutOver',
         '301': 'echo'
     }, config.networkCodes);
-    this.emvTagsField = config.emvTagsField || 55;
+    this.emvParser = require('ut-emv');
     this.successResponseIdentifier = config.successResponseIdentifier || '00';
     this.fieldFormat = merge({}, defaultFields[(config.version || '0') + (config.baseEncoding || 'ascii')], config.fieldFormat);
     this.framePattern = bitSyntax.matcher('header:' + this.fieldFormat.header.size + '/' + getFormat(this.fieldFormat.header.format) +
@@ -206,9 +205,9 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
             }
             $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
-            if (message[this.emvTagsField]) {
+            if (message[55]) {
                 try {
-                    message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
+                    message = Object.assign({}, message, {emvTags: this.emvParser.tagsDecode(message[55], {})});
                 } catch (e) {
                     $meta.mtid = 'error';
                     internalError = this.errors['iso8583.parser'];
@@ -271,7 +270,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     }
     $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
     if (message.emvTags) {
-        message[this.emvTagsField] = emv.tagsEncode(message.emvTags);
+        message[55] = this.emvParser.tagsEncode(message.emvTags);
     }
     var bitmaps = Array.apply(null, new Array(8 * this.fieldPatterns.length)).map(Number.prototype.valueOf, 0); // zero filled array
     for (var i = 64 * this.fieldPatterns.length; i >= 0; i -= 1) {
