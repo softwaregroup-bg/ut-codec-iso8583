@@ -75,7 +75,7 @@ function Iso8583(config) {
         '201': 'cutOver',
         '301': 'echo'
     }, config.networkCodes);
-    this.emvParser = require('ut-emv');
+    this.emvParser = config.emvParser || require('ut-emv');
     this.successResponseIdentifier = config.successResponseIdentifier || '00';
     this.fieldFormat = merge({}, defaultFields[(config.version || '0') + (config.baseEncoding || 'ascii')], config.fieldFormat);
     this.framePattern = bitSyntax.matcher('header:' + this.fieldFormat.header.size + '/' + getFormat(this.fieldFormat.header.format) +
