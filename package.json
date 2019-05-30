@@ -3,8 +3,8 @@
   "version": "6.2.0",
   "main": "./index.js",
   "dependencies": {
-    "lodash.merge": "4.6.0",
-    "ut-bitsyntax": "^6.0.15",
+    "lodash.merge": "4.6.1",
+    "ut-bitsyntax": "^6.0.17",
     "ut-emv": "^6.1.2"
   },
   "devDependencies": {
