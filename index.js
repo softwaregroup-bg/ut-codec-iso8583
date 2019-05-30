@@ -14,7 +14,7 @@ const getMaskList = (arr, objArr) => {
         .filter((v) => objArr[v])
         .map((v) =>
             Buffer.from(objArr[v], 'ascii')
-            .toString('hex')
+                .toString('hex')
         );
 };
 
@@ -234,7 +234,7 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
 Iso8583.prototype.encode = function(message, $meta, context, log) {
     /* jshint bitwise: false */
     var buffers = new Array(64 * this.fieldPatterns.length);
-    var emptyBuffer = new Buffer([]);
+    var emptyBuffer = Buffer.from('');
     if (message[11]) {
         message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${message[11]}`.slice(-this.fieldFormat[11].size);
     } else {
@@ -252,13 +252,13 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     var bitmaps = Array.apply(null, new Array(8 * this.fieldPatterns.length)).map(Number.prototype.valueOf, 0); // zero filled array
     for (var i = 64 * this.fieldPatterns.length; i >= 0; i -= 1) {
         if (i === 0) {
-            buffers[i] = this.encodeField(i, new Buffer(bitmaps.slice(0, 8)));
+            buffers[i] = this.encodeField(i, Buffer.from(bitmaps.slice(0, 8)));
         } else if (i % 64 === 1 && i < 64 * (this.fieldPatterns.length - 1)) {
             var index = (i >> 6) << 3;
             var bitmap = bitmaps.slice(index + 8, index + 16);
             if (bitmap.reduce(function(p, n) { return p + n; })) {
                 bitmaps[(i - 1) >> 3] |= (128 >> (i - 1) % 8);
-                buffers[i] = this.encodeField(i, new Buffer(bitmap));
+                buffers[i] = this.encodeField(i, Buffer.from(bitmap));
             } else {
                 buffers[i] = emptyBuffer;
             }
@@ -269,7 +269,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
             buffers[i] = emptyBuffer;
         }
     }
-    buffers.unshift(this.encodeField('mtid', message.mtid || new Buffer([])));
+    buffers.unshift(this.encodeField('mtid', message.mtid || Buffer.from('')));
     if (this.fieldFormat.header && this.fieldFormat.header.size) {
         buffers.unshift(this.encodeField('header', message.header || Buffer.alloc(this.fieldFormat.header.size)));
     }
