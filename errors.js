@@ -12,12 +12,12 @@ module.exports = defineError => {
     const Generic = defineError('generic', Iso, 'generic error');
     const Parser = defineError('parser', Iso, 'parser error');
     let result = {
-        generic: cause => new Generic(convert(cause)),
-        parser: cause => new Parser(convert(cause))
+        generic: cause => Generic(convert(cause)),
+        parser: cause => Parser(convert(cause))
     };
-    var iterate = errors => Object.keys(errors).forEach(name => {
+    var iterate = errors => Object.keys(errors).map(name => {
         var Err = defineError(name, Iso, errors[name]);
-        result[name] = cause => new Err(convert(cause));
+        result = {...result, [name]: cause => Err(convert(cause))};
     });
 
     iterate(errors0);
