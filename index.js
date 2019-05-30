@@ -71,6 +71,8 @@ function Iso8583(config) {
     this.fieldBuilders.footer = bitSyntax.parse('field:fieldSize/' + getFormat(this.fieldFormat.footer.format));
     this.prefixBuilders = [null];
     this.footerMatcher = bitSyntax.matcher('footer:' + this.fieldFormat.footer.size + '/' + getFormat(this.fieldFormat.footer.format) + ', rest/binary');
+    this.networkMTid = config.networkMTidList || ['0800', '0810'];
+    this.networkCodeField = config.networkCodeField || 70;
     var group = 0;
     while (this.fieldFormat[(group + 1) * 64]) {
         var pattern = [];
@@ -160,8 +162,8 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 }
                 group += 1;
             }
-            if (message.mtid === '0800' || message.mtid === '0810') {
-                $meta.opcode = String(message[70] || '');
+            if (this.networkMTid.includes(message.mtid)) {
+                $meta.opcode = String(message[this.networkCodeField] || '');
                 $meta.opcode = this.networkCodes[$meta.opcode] || $meta.opcode;
             } else {
                 $meta.opcode = String(message[3] || '').substr(0, 2);
