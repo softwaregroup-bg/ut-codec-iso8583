@@ -5,22 +5,21 @@ function convert(msg) {
     }, {iso: msg});
 }
 
+var iterate = (defineError, errorNamespace) => (errors, collection) => Object.keys(errors).reduce((accum, name) => {
+    var Err = defineError(name, errorNamespace, errors[name]);
+    return {...accum, [name]: cause => Err(convert(cause))};
+}, collection);
+
 module.exports = defineError => {
     const Iso = defineError('iso8583');
     const errors0 = require('./iso0').errors;
     const errors1 = require('./iso1').errors;
     const Generic = defineError('generic', Iso, 'generic error');
     const Parser = defineError('parser', Iso, 'parser error');
-    let result = {
+    const interator = iterate(defineError, Iso);
+
+    return interator(errors1, interator(errors0, {
         generic: cause => Generic(convert(cause)),
         parser: cause => Parser(convert(cause))
-    };
-    var iterate = errors => Object.keys(errors).map(name => {
-        var Err = defineError(name, Iso, errors[name]);
-        result = {...result, [name]: cause => Err(convert(cause))};
-    });
-
-    iterate(errors0);
-    iterate(errors1);
-    return result;
+    }));
 };
