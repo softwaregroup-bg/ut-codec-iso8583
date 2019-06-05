@@ -4,13 +4,13 @@
   "main": "./index.js",
   "dependencies": {
     "lodash.merge": "4.6.1",
-    "ut-bitsyntax": "^6.2.1",
+    "ut-bitsyntax": "^6.2.3",
     "ut-emv": "^7.0.0-rc-dss.5"
   },
   "devDependencies": {
     "tap": "^12.5.2",
     "ut-unittest": "^1.1.0",
-    "ut-tools": "^6.11.0"
+    "ut-tools": "^6.19.1"
   },
   "scripts": {
     "lint": "ut-lint .",
