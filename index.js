@@ -71,7 +71,7 @@ function Iso8583(config) {
     this.fieldBuilders.footer = bitSyntax.parse('field:fieldSize/' + getFormat(this.fieldFormat.footer.format));
     this.prefixBuilders = [null];
     this.footerMatcher = bitSyntax.matcher('footer:' + this.fieldFormat.footer.size + '/' + getFormat(this.fieldFormat.footer.format) + ', rest/binary');
-    this.networkMTid = config.networkMTidList || ['0800', '0810'];
+    this.mtidRouteMap = {...{decode: {}, encode: {}}, ...config.mtidRouteMap};
     this.networkCodeField = config.networkCodeField || 70;
     var group = 0;
     while (this.fieldFormat[(group + 1) * 64]) {
@@ -162,7 +162,8 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 }
                 group += 1;
             }
-            if (this.networkMTid.includes(message.mtid)) {
+            message.mtid = this.mtidRouteMap.decode[message.mtid] || message.mtid;
+            if (['0800', '0810'].includes(message.mtid)) {
                 $meta.opcode = String(message[this.networkCodeField] || '');
                 $meta.opcode = this.networkCodes[$meta.opcode] || $meta.opcode;
             } else {
@@ -269,6 +270,8 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
             buffers[i] = emptyBuffer;
         }
     }
+
+    message.mtid = this.mtidRouteMap.encode[message.mtid] || message.mtid;
     buffers.unshift(this.encodeField('mtid', message.mtid || Buffer.from('')));
     if (this.fieldFormat.header && this.fieldFormat.header.size) {
         buffers.unshift(this.encodeField('header', message.header || Buffer.alloc(this.fieldFormat.header.size)));
