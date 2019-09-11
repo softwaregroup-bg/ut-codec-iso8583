@@ -59,6 +59,7 @@ function Iso8583(config) {
         '301': 'echo'
     }, config.networkCodes);
     this.emvTagsField = config.emvTagsField || 55;
+    this.traceFields = config.traceFields || ['mtid'];
     this.fieldFormat = merge({}, defaultFields[(config.version || '0') + (config.baseEncoding || 'ascii')], config.fieldFormat);
     this.framePattern = bitSyntax.matcher('header:' + this.fieldFormat.header.size + '/' + getFormat(this.fieldFormat.header.format) +
         ', mtid:' + this.fieldFormat.mtid.size + '/' + getFormat(this.fieldFormat.mtid.format) +
@@ -166,7 +167,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             } else {
                 $meta.opcode = String(message[3] || '').substr(0, 2);
             }
-            $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+            $meta.trace = this.traceFields.reduce((trace, field) => trace + (message[field] || ''), message[11].toString());
             if (message.mtid && message.mtid.slice) {
                 $meta.mtid = {
                     '0': 'request',
@@ -243,7 +244,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
             context.trace = 0;
         }
     }
-    $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+    $meta.trace = this.traceFields.reduce((trace, field) => trace + (message[field] || ''), message[11].toString());
     if (message.emvTags) {
         message[this.emvTagsField] = emv.tagsEncode(message.emvTags);
     }
