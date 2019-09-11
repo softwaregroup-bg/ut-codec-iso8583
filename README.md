@@ -88,8 +88,8 @@ Encodes string to ISO8583 format
 
 params
 
-  - _fieldName_ (integer) - ISO8583 element index
-  - _fieldValue_ (string) - ISO8583 element value
+- _fieldName_ (integer) - ISO8583 element index
+- _fieldValue_ (string) - ISO8583 element value
 
 result (buffer) - ISO8583 encoded _fieldValue_
 
@@ -143,9 +143,9 @@ result (object)
 - _iso1_ (string) - same as _1_ in _params_
 - __rest__ - all other ISO8583 data elements from _params_ presented as _key:
  value_ pairs as follows:
-    - _key_ - ISO8583 element index; **Note: _key_ is the original _key_ from
-     _params_ with prepended _iso_**
-    - _value_ (string) - ISO8583 element value
+  - _key_ - ISO8583 element index; **Note: _key_ is the original _key_ from
+   _params_ with prepended _iso_**
+  - _value_ (string) - ISO8583 element value
 
 ### getFormat
 
