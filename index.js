@@ -134,7 +134,7 @@ Iso8583.prototype.getTrace = function(message) {
         if (field === 'mtid') {
             return trace + (message.mtid || '00').substr(0, 2);
         } else {
-            return trace + (message[field].toString() || '');
+            return trace + (message[field] || '').toString();
         }
     }, '');
 };
