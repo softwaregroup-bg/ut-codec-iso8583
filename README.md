@@ -48,7 +48,7 @@ The module exposes _Iso8583_ class.
 params
 
 - _bitmap_ (buffer) - ISO8583 bitmap
-- _start_ ()
+- _start_ (???) - ???
 
 result (object) - each _key: value_ pair contains the following:
 
@@ -72,10 +72,10 @@ result (object)
 
 - _header_ (string) - message header
 - _mtid_ (string) - message type indicator according to ISO8583 specifications
-- rawData
-- _0_ (string) - first bitmap
-- _1_ (string) - second bitmap
-- __rest__ - depending on data elements _0_ and _1_ contain ISO8583 data
+- rawData (buffer) - message in ISO8583 format
+- _0_ (string) - primary bitmap
+- _1_ (string) - secondary bitmap
+- __rest__ - depending on data elements _0_ and _1_ contains ISO8583 data
  elements as _key: value_ pairs as follows:
   - _key_ - ISO8583 element index
   - _value_ (string) - ISO8583 element value
@@ -126,9 +126,9 @@ params
     - _stack_ (string) - error stack
   - _header_ (string) - message header
   - _mtid_ (string) - message type indicator according to ISO8583 specifications
-  - _0_ (string) - first bitmap
-  - _1_ (string) - second bitmap
-  - __rest__ - depending on data elements _0_ and _1_ contain ISO8583 data
+  - _0_ (string) - primary bitmap
+  - _1_ (string) - secondary bitmap
+  - __rest__ - depending on data elements _0_ and _1_ contains ISO8583 data
    elements as _key: value_ pairs as follows:
     - _key_ - ISO8583 element index
     - _value_ (string) - ISO8583 element value
@@ -190,6 +190,7 @@ Masks some of the ISO8583 data elements in ISO8583 encoded message
 params
 
 - _maskFields_ (array) - array of ISO8583 data elements' indexes to be masked
+  - (string) - ISO8583 data element
 - _buffer_ (buffer) - ISO8583 message
 - _messageParsed_ (object) - ISO8583 message; each _key: value_ contains the
  following:
@@ -210,6 +211,7 @@ Masks some of the ISO8583 data elements in ISO8583 encoded message
 params
 
 - _maskFields_ (array) - array of ISO8583 data elements' indexes to be masked
+  - (string) - ISO8583 data element
 - _buffer_ (buffer) - ISO8583 message
 - _message_ (object) - ISO8583 message; each _key: value_ contains the
  following:
@@ -225,8 +227,8 @@ result
 
 Each ISO8583 field is defined in the following object:
 
-- _key_ - ISO8583 element index, including _header_, _footer_, _mtid_ and first
- bitmap _0_
+- _key_ - ISO8583 element index, including _header_, _footer_, _mtid_ and
+ primary bitmap _0_
 - _value_ (object) - data element definition
   - _size_ (integer) - size of the data element value in number of symbols
   - _name_ (string) - descriptive field name
@@ -242,6 +244,7 @@ Each ISO8583 field is defined in the following object:
 - _fetchErrors_ (function) - fetchErrors function as defined in _ut-error_
 - _maskFields_ (array) - contains ISO8583 element indexes which will be masked
  in ISO8583 encoded messages
+  - (string) - ISO8583 data element
 - _networkCodes_ () - ???
 - _emvParser_ () - ???
 - _successResponseIdentifier_ (string) - error code for successful processing

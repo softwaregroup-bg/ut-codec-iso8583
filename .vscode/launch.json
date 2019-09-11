@@ -5,7 +5,7 @@
             "type": "node",
             "request": "launch",
             "name": "Single test",
-            "program": "${workspaceFolder}/test/unit/cases/decoding.js",
+            "program": "${workspaceFolder}/test/unit/cases/encoding.js",
             "runtimeArgs": [
                 "--preserve-symlinks",
                 "--nolazy",
