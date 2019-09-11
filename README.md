@@ -256,3 +256,5 @@ Each ISO8583 field is defined in the following object:
 - _fieldFormat_ (object) - ISO8583 field format definition to overwrite the
  default format; **NOTE: for more information please check _Field format
  definition_ above**
+- _networkCodeField_ (integer) - ???
+- _mtidRouteMap_ (???) - ???
