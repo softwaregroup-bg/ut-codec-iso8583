@@ -65,7 +65,7 @@ function Iso8583(config) {
         throw new Error('Missing config.fetchErrors, check if are you using latest version of ut-port-tcp.');
     }
     const maskFields = config.maskFields || ['2', '35'];
-    this.traceTemplate = template(config.traceTemplate || '${(message.mtid || "00").substr(0, 2)}${message[11]}', ['message']);
+    this.traceTemplate = template(config.traceTemplate || '${(message.mtid || "00").substr(0, 2)}${message[11]}', ['message']); // eslint-disable-line no-template-curly-in-string
     this.errors = require('./errors')(config);
     this.decodeBufferMask = decodeBufferMask(maskFields);
     this.encodeBufferMask = encodeBufferMask(maskFields);
