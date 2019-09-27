@@ -1,7 +1,8 @@
 'use strict';
-var merge = require('lodash.merge');
-var defaultFields = require('./fields');
-var bitSyntax = require('ut-bitsyntax');
+const merge = require('lodash.merge');
+const defaultFields = require('./fields');
+const bitSyntax = require('ut-bitsyntax');
+const template = require('ut-function.template');
 const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
 
 function convertError(msg) {
@@ -64,6 +65,7 @@ function Iso8583(config) {
         throw new Error('Missing config.fetchErrors, check if are you using latest version of ut-port-tcp.');
     }
     const maskFields = config.maskFields || ['2', '35'];
+    this.traceTemplate = template(config.traceTemplate || '${(message.mtid || "00").substr(0, 2)}${message[11]}', ['message']); // eslint-disable-line no-template-curly-in-string
     this.errors = require('./errors')(config);
     this.decodeBufferMask = decodeBufferMask(maskFields);
     this.encodeBufferMask = encodeBufferMask(maskFields);
@@ -192,7 +194,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             } else {
                 $meta.opcode = String(message[3] || '').substr(0, 2);
             }
-            $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+            $meta.trace = this.traceTemplate(message);
             if (message.mtid && message.mtid.slice) {
                 $meta.mtid = {
                     '0': 'request',
@@ -271,7 +273,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
             context.trace = 0;
         }
     }
-    $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+    $meta.trace = this.traceTemplate(message);
     if (message.emvTags) {
         message[55] = this.emvParser.tagsEncode(message.emvTags);
     }
