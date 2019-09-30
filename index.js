@@ -297,8 +297,10 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
             buffers[i] = emptyBuffer;
         }
     }
+
     message.mtid = this.mtidRouteMap.encode[message.mtid] || message.mtid;
     buffers.unshift(this.encodeField('mtid', message.mtid || Buffer.alloc(0)));
+
     if (this.fieldFormat.header && this.fieldFormat.header.size) {
         buffers.unshift(this.encodeField('header', message.header || Buffer.alloc(this.fieldFormat.header.size)));
     }
