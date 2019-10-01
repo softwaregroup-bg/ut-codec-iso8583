@@ -1,3 +1,7 @@
+# [7.0.0](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.2.1...v7.0.0) (2019-10-01)
+
+
+
 <a name="6.2.1"></a>
 ## [6.2.1](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.2.0...v6.2.1) (2019-05-30)
 
