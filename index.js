@@ -1,9 +1,16 @@
 'use strict';
-var merge = require('lodash.merge');
-var defaultFields = require('./fields');
-var bitSyntax = require('ut-bitsyntax');
-var emv = require('ut-emv');
+const merge = require('lodash.merge');
+const defaultFields = require('./fields');
+const bitSyntax = require('ut-bitsyntax');
+const template = require('ut-function.template');
 const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
+
+function convertError(msg) {
+    return Object.keys(msg).reduce((prev, current) => {
+        prev[(/^[^A-Za-z_]/.test(current) ? 'iso' : '') + current] = msg[current];
+        return prev;
+    }, {iso: msg});
+}
 
 function getFormat(format, fallback) {
     return (format && {'numeric': 'string-left-zero', 'string': 'string-right-space', 'amount': 'string-left-zero', 'bcdamount': 'string'}[format]) || format || fallback || 'binary';
@@ -11,11 +18,15 @@ function getFormat(format, fallback) {
 
 const getMaskList = (arr, objArr) => {
     return arr
-        .filter((v) => objArr[v])
-        .map((v) =>
-            Buffer.from(objArr[v], 'ascii')
-                .toString('hex')
-        );
+        .filter((v) => objArr[v.split(':').shift()])
+        .map((v) => {
+            let enc = 'ascii';
+            if (v.endsWith(':hex')) {
+                enc = 'hex';
+                v = v.split(':').shift();
+            }
+            return Buffer.from(objArr[v], enc).toString('hex');
+        });
 };
 
 const decodeBufferMask = (maskFields) => (buffer, messageParsed) => {
@@ -47,9 +58,17 @@ function Iso8583(config) {
     if (!config.defineError) {
         throw new Error('Missing config.defineError, check if are you using latest version of ut-port-tcp.');
     }
-    this.errors = require('./errors')(config.defineError);
-    this.decodeBufferMask = decodeBufferMask(['2']);
-    this.encodeBufferMask = encodeBufferMask(['2']);
+    if (!config.getError) {
+        throw new Error('Missing config.getError, check if are you using latest version of ut-port-tcp.');
+    }
+    if (!config.fetchErrors) {
+        throw new Error('Missing config.fetchErrors, check if are you using latest version of ut-port-tcp.');
+    }
+    const maskFields = config.maskFields || ['2', '35'];
+    this.traceTemplate = template(config.traceTemplate || '${(message.mtid || "00").substr(0, 2)}${message[11]}', ['message']); // eslint-disable-line no-template-curly-in-string
+    this.errors = require('./errors')(config);
+    this.decodeBufferMask = decodeBufferMask(maskFields);
+    this.encodeBufferMask = encodeBufferMask(maskFields);
     this.networkCodes = Object.assign({
         '001': 'keyChange',
         '002': 'signOff',
@@ -58,7 +77,8 @@ function Iso8583(config) {
         '201': 'cutOver',
         '301': 'echo'
     }, config.networkCodes);
-    this.emvTagsField = config.emvTagsField || 55;
+    this.emvParser = config.emvParser || require('ut-emv');
+    this.successResponseIdentifier = config.successResponseIdentifier || '00';
     this.fieldFormat = merge({}, defaultFields[(config.version || '0') + (config.baseEncoding || 'ascii')], config.fieldFormat);
     this.framePattern = bitSyntax.matcher('header:' + this.fieldFormat.header.size + '/' + getFormat(this.fieldFormat.header.format) +
         ', mtid:' + this.fieldFormat.mtid.size + '/' + getFormat(this.fieldFormat.mtid.format) +
@@ -79,8 +99,9 @@ function Iso8583(config) {
         for (var i = 1; i <= 64; i += 1) {
             var field = group * 64 + i;
             if (this.fieldFormat[field].prefixSize) { // if the field is with variable size
+                let factor = this.fieldFormat[field].prefixFactor;
                 pattern.push('prefix' + field + ':field' + field + 'Size/' + getFormat(this.fieldFormat[field].prefixFormat, 'string-left-zero') +
-                    ', field' + field + ':prefix' + field + '/' + getFormat(this.fieldFormat[field].format));
+                    ', field' + field + ':prefix' + field + '/' + getFormat(this.fieldFormat[field].format) + (factor ? '-unit:' + (8 / factor) : ''));
                 this.prefixBuilders.push(bitSyntax.parse('prefix:' + this.fieldFormat[field].prefixSize + '/' +
                     getFormat(this.fieldFormat[field].prefixFormat, 'string-left-zero')));
             } else { // if the field is with fixed size
@@ -113,6 +134,10 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
     var internalError = false;
     var message = {};
     try {
+        if (log && log.trace) {
+            let bufferMasked = this.decodeBufferMask(buffer, message);
+            log.trace({$meta: {mtid: 'frame', method: 'iso8583.decode'}, message: bufferMasked, log: context && context.session && context.session.log});
+        }
         var frame = this.framePattern(buffer);
         var bitmapField = 0;
         if (frame) {
@@ -169,35 +194,38 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             } else {
                 $meta.opcode = String(message[3] || '').substr(0, 2);
             }
-            $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+            $meta.trace = this.traceTemplate(message);
             if (message.mtid && message.mtid.slice) {
                 $meta.mtid = {
                     '0': 'request',
-                    '1': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
+                    '1': (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
+                        ? 'response'
+                        : 'error',
                     '2': 'request',
-                    '3': (parseInt(message[39] || 0) === 0) ? 'response' : 'error',
+                    '3': (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
+                        ? 'response'
+                        : 'error',
                     '4': 'notification',
                     '5': 'notification'
                 }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
             }
             $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
-            if (message[this.emvTagsField]) {
+            if (message[55]) {
                 try {
-                    message = Object.assign(message, {emvTags: emv.tagsDecode(message[this.emvTagsField], {})});
+                    message = Object.assign({}, message, {emvTags: this.emvParser.tagsDecode(message[55], {})});
                 } catch (e) {
                     $meta.mtid = 'error';
-                    internalError = this.errors.parser;
+                    internalError = this.errors['iso8583.parser'];
                     message.errorStack = e;
                 }
             }
             if ($meta.mtid === 'error') {
-                var err = internalError || (this.errors['' + message[39]] || this.errors.generic);
-                message = err(message);
+                var err = internalError || (this.errors[`iso8583.${message[39]}`] || this.errors['iso8583.generic']);
+                message = err(convertError(message));
             }
-            if (log && log.trace) {
-                let bufferMasked = this.decodeBufferMask(buffer, message);
-                log.trace({$meta: {mtid: 'frame', opcode: 'in'}, message: bufferMasked, log: context && context.session && context.session.log});
-            }
+            // for mac verify
+            message.rawData = buffer;
+
             return message;
         } else {
             throw new Error('Unable to parse message type or first bitmap!');
@@ -205,7 +233,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
     } catch (e) {
         $meta.mtid = 'error';
         message.errorStack = e;
-        message = this.errors.parser(message);
+        message = this.errors['iso8583.parser'](convertError(message));
         return message;
     }
 };
@@ -229,16 +257,15 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
         field: fieldValue,
         fieldSize
     });
-    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {'prefix': field.length}), field]) : field;
+    let factor = this.fieldFormat[fieldName].prefixFactor || 1;
+    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {'prefix': field.length * factor}), field]) : field;
 };
 
 Iso8583.prototype.encode = function(message, $meta, context, log) {
     /* jshint bitwise: false */
     var buffers = new Array(64 * this.fieldPatterns.length);
-    var emptyBuffer = Buffer.from('');
-    if (message[11]) {
-        message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${message[11]}`.slice(-this.fieldFormat[11].size);
-    } else {
+    var emptyBuffer = Buffer.alloc(0);
+    if (!message[11]) {
         context.trace = context.trace || 0;
         message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${context.trace}`.slice(-this.fieldFormat[11].size);
         context.trace++;
@@ -246,9 +273,9 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
             context.trace = 0;
         }
     }
-    $meta.trace = `${(message.mtid || '00').substr(0, 2)}${message[11]}`;
+    $meta.trace = this.traceTemplate(message);
     if (message.emvTags) {
-        message[this.emvTagsField] = emv.tagsEncode(message.emvTags);
+        message[55] = this.emvParser.tagsEncode(message.emvTags);
     }
     var bitmaps = Array.apply(null, new Array(8 * this.fieldPatterns.length)).map(Number.prototype.valueOf, 0); // zero filled array
     for (var i = 64 * this.fieldPatterns.length; i >= 0; i -= 1) {
@@ -272,7 +299,8 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     }
 
     message.mtid = this.mtidRouteMap.encode[message.mtid] || message.mtid;
-    buffers.unshift(this.encodeField('mtid', message.mtid || Buffer.from('')));
+    buffers.unshift(this.encodeField('mtid', message.mtid || Buffer.alloc(0)));
+
     if (this.fieldFormat.header && this.fieldFormat.header.size) {
         buffers.unshift(this.encodeField('header', message.header || Buffer.alloc(this.fieldFormat.header.size)));
     }
@@ -282,7 +310,7 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     let buffer = Buffer.concat(buffers);
     if (log && log.trace) {
         let bufferMasked = this.encodeBufferMask(buffer, message);
-        log.trace({$meta: {mtid: 'frame', opcode: 'out'}, message: bufferMasked, log: context && context.session && context.session.log});
+        log.trace({$meta: {mtid: 'frame', method: 'iso8583.encode'}, message: bufferMasked, log: context && context.session && context.session.log});
     }
     return buffer;
 };

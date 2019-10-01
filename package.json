@@ -1,21 +1,24 @@
 {
   "name": "ut-codec-iso8583",
-  "version": "6.2.1",
+  "version": "7.0.0-rc-dss.14",
   "main": "./index.js",
   "dependencies": {
-    "lodash.merge": "4.6.1",
-    "ut-bitsyntax": "^6.0.17",
-    "ut-emv": "^6.1.2"
+    "lodash.merge": "4.6.2",
+    "ut-bitsyntax": "^6.2.3",
+    "ut-emv": "^7.0.1",
+    "ut-function.template": "^1.4.0"
   },
   "devDependencies": {
-    "ut-tools": "^5.29.14"
+    "tap": "^12.7.0",
+    "ut-tools": "^6.25.3",
+    "ut-unittest": "^1.1.0"
   },
   "scripts": {
     "lint": "ut-lint .",
     "release": "ut-release",
     "changelog": "ut-changelog",
     "check": "ut-check",
-    "cover": "ut-cover",
+    "cover": "ut-cover-parallel",
     "lint-js": "ut-lint-js .",
     "postpublish": "ut-postpublish",
     "postversion": "ut-postversion",
@@ -25,7 +28,7 @@
     "precover": "ut-precover",
     "pretest": "ut-pretest",
     "preversion": "ut-preversion",
-    "test": "ut-test",
+    "test": "ut-test-parallel",
     "version": "ut-version",
     "jenkins": "ut-jenkins",
     "gitlab": "ut-gitlab"
