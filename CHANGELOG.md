@@ -1,3 +1,12 @@
+## [7.0.1](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v7.0.0...v7.0.1) (2020-01-15)
+
+
+### Bug Fixes
+
+* quotes in template string ([#25](https://github.com/softwaregroup-bg/ut-codec-iso8583/issues/25)) ([8b1a311](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/8b1a311))
+
+
+
 # [7.0.0](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v6.2.1...v7.0.0) (2019-10-01)
 
 
