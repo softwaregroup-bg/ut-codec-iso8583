@@ -1,3 +1,12 @@
+## [7.0.3](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v7.0.2...v7.0.3) (2020-02-24)
+
+
+### Bug Fixes
+
+* lint ([a598e99](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/a598e993e30973ab82d1f38b2d1f355262314f69))
+
+
+
 ## [7.0.2](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v7.0.1...v7.0.2) (2020-01-17)
 
 
