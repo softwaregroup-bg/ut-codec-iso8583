@@ -1,4 +1,4 @@
-var tap = require('tap');
+const tap = require('tap');
 const {define, get, fetch} = require('ut-unittest/errorApi.js')();
 const errorApi = { getError: get, fetchErrors: fetch, defineError: define };
 const config = require('../config/testData')();

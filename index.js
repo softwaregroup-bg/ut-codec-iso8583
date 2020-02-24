@@ -13,7 +13,7 @@ function convertError(msg) {
 }
 
 function getFormat(format, fallback) {
-    return (format && {'numeric': 'string-left-zero', 'string': 'string-right-space', 'amount': 'string-left-zero', 'bcdamount': 'string'}[format]) || format || fallback || 'binary';
+    return (format && {numeric: 'string-left-zero', string: 'string-right-space', amount: 'string-left-zero', bcdamount: 'string'}[format]) || format || fallback || 'binary';
 }
 
 const getMaskList = (arr, objArr) => {
@@ -30,10 +30,10 @@ const getMaskList = (arr, objArr) => {
 };
 
 const decodeBufferMask = (maskFields) => (buffer, messageParsed) => {
-    var maskList = getMaskList(maskFields, messageParsed);
+    const maskList = getMaskList(maskFields, messageParsed);
 
     if (maskList.length) { // TODO: set some emv default field
-        var newBuffer = maskList.reduce((a, cur) => {
+        const newBuffer = maskList.reduce((a, cur) => {
             return a.split(cur).join((new Array(cur.length / 2)).fill(maskSymbol).join(''));
         }, buffer.toString('hex'));
 
@@ -43,9 +43,9 @@ const decodeBufferMask = (maskFields) => (buffer, messageParsed) => {
 };
 
 const encodeBufferMask = (maskFields) => (buffer, message) => {
-    var maskList = getMaskList(maskFields, message);
+    const maskList = getMaskList(maskFields, message);
     if (maskList.length) {
-        var newBuffer = maskList.reduce((a, cur) => {
+        const newBuffer = maskList.reduce((a, cur) => {
             return a.split(cur).join((new Array(cur.length / 2)).fill(maskSymbol).join(''));
         }, buffer.toString('hex'));
 
@@ -73,9 +73,9 @@ function Iso8583(config) {
         '001': 'keyChange',
         '002': 'signOff',
         '061': 'echo',
-        '161': 'keyChange',
-        '201': 'cutOver',
-        '301': 'echo'
+        161: 'keyChange',
+        201: 'cutOver',
+        301: 'echo'
     }, config.networkCodes);
     this.emvParser = config.emvParser || require('ut-emv');
     this.successResponseIdentifier = config.successResponseIdentifier || '00';
@@ -93,13 +93,13 @@ function Iso8583(config) {
     this.footerMatcher = bitSyntax.matcher('footer:' + this.fieldFormat.footer.size + '/' + getFormat(this.fieldFormat.footer.format) + ', rest/binary');
     this.mtidRouteMap = {...{decode: {}, encode: {}}, ...config.mtidRouteMap};
     this.networkCodeField = config.networkCodeField || 70;
-    var group = 0;
+    let group = 0;
     while (this.fieldFormat[(group + 1) * 64]) {
-        var pattern = [];
-        for (var i = 1; i <= 64; i += 1) {
-            var field = group * 64 + i;
+        const pattern = [];
+        for (let i = 1; i <= 64; i += 1) {
+            const field = group * 64 + i;
             if (this.fieldFormat[field].prefixSize) { // if the field is with variable size
-                let factor = this.fieldFormat[field].prefixFactor;
+                const factor = this.fieldFormat[field].prefixFactor;
                 pattern.push('prefix' + field + ':field' + field + 'Size/' + getFormat(this.fieldFormat[field].prefixFormat, 'string-left-zero') +
                     ', field' + field + ':prefix' + field + '/' + getFormat(this.fieldFormat[field].format) + (factor ? '-unit:' + (8 / factor) : ''));
                 this.prefixBuilders.push(bitSyntax.parse('prefix:' + this.fieldFormat[field].prefixSize + '/' +
@@ -118,9 +118,9 @@ function Iso8583(config) {
 
 Iso8583.prototype.fieldSizes = function(bitmap, start) {
     /* jshint bitwise: false */
-    var result = {};
-    for (var i = 0; i <= 63; i += 1) {
-        var size = bitmap && ((bitmap[i >> 3] & (128 >> (i % 8))) !== 0);
+    const result = {};
+    for (let i = 0; i <= 63; i += 1) {
+        const size = bitmap && ((bitmap[i >> 3] & (128 >> (i % 8))) !== 0);
         if (size) {
             result['field' + (start + i) + 'Size'] = this.fieldFormat[start + i].prefixSize || this.fieldFormat[start + i].size;
         } else {
@@ -131,21 +131,21 @@ Iso8583.prototype.fieldSizes = function(bitmap, start) {
 };
 
 Iso8583.prototype.decode = function(buffer, $meta, context, log) {
-    var internalError = false;
-    var message = {};
+    let internalError = false;
+    let message = {};
     try {
         if (log && log.trace) {
-            let bufferMasked = this.decodeBufferMask(buffer, message);
+            const bufferMasked = this.decodeBufferMask(buffer, message);
             log.trace({$meta: {mtid: 'frame', method: 'iso8583.decode'}, message: bufferMasked, log: context && context.session && context.session.log});
         }
-        var frame = this.framePattern(buffer);
-        var bitmapField = 0;
+        let frame = this.framePattern(buffer);
+        let bitmapField = 0;
         if (frame) {
-            message = {'header': frame.header, 'mtid': frame.mtid, '0': frame.field0};
-            var parsedLength = buffer.length - frame.rest.length;
-            var group = 0;
+            message = {header: frame.header, mtid: frame.mtid, 0: frame.field0};
+            let parsedLength = buffer.length - frame.rest.length;
+            let group = 0;
             while (frame) {
-                var fieldPattern = this.fieldPatterns[group];
+                const fieldPattern = this.fieldPatterns[group];
                 if (!fieldPattern) {
                     if (frame.rest && frame.rest.length) {
                         if (this.fieldFormat.footer && this.fieldFormat.footer.size) {
@@ -159,11 +159,11 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                     }
                     break;
                 }
-                var fieldSizes = this.fieldSizes(frame['field' + bitmapField], group * 64 + 1);
-                var rest = frame.rest;
+                const fieldSizes = this.fieldSizes(frame['field' + bitmapField], group * 64 + 1);
+                const rest = frame.rest;
                 frame = fieldPattern && fieldPattern(rest, fieldSizes);
                 if (!frame && fieldPattern) {
-                    for (var failField = (group + 1) * 64; failField >= group * 64 + 1; failField -= 1) { // find at which field we failed by skipping fields from the end
+                    for (let failField = (group + 1) * 64; failField >= group * 64 + 1; failField -= 1) { // find at which field we failed by skipping fields from the end
                         fieldSizes['field' + failField + 'Size'] = 0;
                         frame = fieldPattern && fieldPattern(rest, fieldSizes);
                         if (frame && frame.rest && frame.rest.length && this.fieldFormat.footer && this.fieldFormat.footer.size) {
@@ -180,7 +180,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 }
                 parsedLength += rest.length - frame.rest.length;
                 bitmapField = group * 64 + 1;
-                for (var fieldNo = group * 64 + 1; fieldNo <= (group + 1) * 64; fieldNo += 1) {
+                for (let fieldNo = group * 64 + 1; fieldNo <= (group + 1) * 64; fieldNo += 1) {
                     if (fieldSizes['field' + fieldNo + 'Size']) {
                         message[fieldNo] = frame['field' + fieldNo];
                     }
@@ -197,16 +197,16 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
             $meta.trace = this.traceTemplate(message);
             if (message.mtid && message.mtid.slice) {
                 $meta.mtid = {
-                    '0': 'request',
-                    '1': (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
+                    0: 'request',
+                    1: (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
                         ? 'response'
                         : 'error',
-                    '2': 'request',
-                    '3': (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
+                    2: 'request',
+                    3: (message[39] || this.successResponseIdentifier) === this.successResponseIdentifier
                         ? 'response'
                         : 'error',
-                    '4': 'notification',
-                    '5': 'notification'
+                    4: 'notification',
+                    5: 'notification'
                 }[(message.mtid.slice(-2).substr(0, 1))] || 'error';
             }
             $meta.method = message.mtid + ($meta.opcode ? '.' + $meta.opcode : '');
@@ -220,7 +220,7 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
                 }
             }
             if ($meta.mtid === 'error') {
-                var err = internalError || (this.errors[`iso8583.${message[39]}`] || this.errors['iso8583.generic']);
+                const err = internalError || (this.errors[`iso8583.${message[39]}`] || this.errors['iso8583.generic']);
                 message = err(convertError(message));
             }
             // for mac verify
@@ -239,9 +239,9 @@ Iso8583.prototype.decode = function(buffer, $meta, context, log) {
 };
 
 Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
-    var prefixBuilder = this.prefixBuilders[fieldName];
-    var builder = this.fieldBuilders[fieldName];
-    var fieldSize;
+    const prefixBuilder = this.prefixBuilders[fieldName];
+    const builder = this.fieldBuilders[fieldName];
+    let fieldSize;
     if (!prefixBuilder) {
         fieldSize = this.fieldFormat[fieldName].size;
     } else if (fieldValue == null || !fieldValue.toString) {
@@ -253,18 +253,18 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
     } else {
         fieldSize = fieldValue.toString().length;
     }
-    var field = bitSyntax.build(builder, {
+    const field = bitSyntax.build(builder, {
         field: fieldValue,
         fieldSize
     });
-    let factor = this.fieldFormat[fieldName].prefixFactor || 1;
-    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {'prefix': field.length * factor}), field]) : field;
+    const factor = this.fieldFormat[fieldName].prefixFactor || 1;
+    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {prefix: field.length * factor}), field]) : field;
 };
 
 Iso8583.prototype.encode = function(message, $meta, context, log) {
     /* jshint bitwise: false */
-    var buffers = new Array(64 * this.fieldPatterns.length);
-    var emptyBuffer = Buffer.alloc(0);
+    const buffers = new Array(64 * this.fieldPatterns.length);
+    const emptyBuffer = Buffer.alloc(0);
     if (!message[11]) {
         context.trace = context.trace || 0;
         message[11] = `${'0'.repeat(this.fieldFormat[11].size)}${context.trace}`.slice(-this.fieldFormat[11].size);
@@ -277,13 +277,13 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     if (message.emvTags) {
         message[55] = this.emvParser.tagsEncode(message.emvTags);
     }
-    var bitmaps = Array.apply(null, new Array(8 * this.fieldPatterns.length)).map(Number.prototype.valueOf, 0); // zero filled array
-    for (var i = 64 * this.fieldPatterns.length; i >= 0; i -= 1) {
+    const bitmaps = Array.apply(null, new Array(8 * this.fieldPatterns.length)).map(Number.prototype.valueOf, 0); // zero filled array
+    for (let i = 64 * this.fieldPatterns.length; i >= 0; i -= 1) {
         if (i === 0) {
             buffers[i] = this.encodeField(i, Buffer.from(bitmaps.slice(0, 8)));
         } else if (i % 64 === 1 && i < 64 * (this.fieldPatterns.length - 1)) {
-            var index = (i >> 6) << 3;
-            var bitmap = bitmaps.slice(index + 8, index + 16);
+            const index = (i >> 6) << 3;
+            const bitmap = bitmaps.slice(index + 8, index + 16);
             if (bitmap.reduce(function(p, n) { return p + n; })) {
                 bitmaps[(i - 1) >> 3] |= (128 >> (i - 1) % 8);
                 buffers[i] = this.encodeField(i, Buffer.from(bitmap));
@@ -307,9 +307,9 @@ Iso8583.prototype.encode = function(message, $meta, context, log) {
     if (this.fieldFormat.footer && this.fieldFormat.footer.size) {
         buffers.push(this.encodeField('footer', message.footer || Buffer.alloc(this.fieldFormat.footer.size)));
     }
-    let buffer = Buffer.concat(buffers);
+    const buffer = Buffer.concat(buffers);
     if (log && log.trace) {
-        let bufferMasked = this.encodeBufferMask(buffer, message);
+        const bufferMasked = this.encodeBufferMask(buffer, message);
         log.trace({$meta: {mtid: 'frame', method: 'iso8583.encode'}, message: bufferMasked, log: context && context.session && context.session.log});
     }
     return buffer;
