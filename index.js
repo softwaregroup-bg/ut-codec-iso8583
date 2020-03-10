@@ -60,7 +60,7 @@ function Iso8583(config) {
         '301': 'echo'
     }, config.networkCodes);
     this.emvTagsField = config.emvTagsField || 55;
-    this.traceTemplate = template(config.traceTemplate || '${(message.mtid || "00").substr(0, 2)}${message[11]}', ['message']); // eslint-disable-line no-template-curly-in-string
+    this.traceTemplate = template(config.traceTemplate || '${(message.mtid || \'00\').substr(0, 2)}${message[11]}', ['message']); // eslint-disable-line no-template-curly-in-string
     this.fieldFormat = merge({}, defaultFields[(config.version || '0') + (config.baseEncoding || 'ascii')], config.fieldFormat);
     this.framePattern = bitSyntax.matcher('header:' + this.fieldFormat.header.size + '/' + getFormat(this.fieldFormat.header.format) +
         ', mtid:' + this.fieldFormat.mtid.size + '/' + getFormat(this.fieldFormat.mtid.format) +
