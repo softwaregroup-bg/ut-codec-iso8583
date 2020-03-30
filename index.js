@@ -258,7 +258,11 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
         fieldSize
     });
     const factor = this.fieldFormat[fieldName].prefixFactor || 1;
-    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {prefix: field.length * factor}), field]) : field;
+    let prefix = field.length * factor;
+    if (builder[0].xbcd) {
+        prefix = fieldValue.length;
+    }
+    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {prefix}), field]) : field;
 };
 
 Iso8583.prototype.encode = function(message, $meta, context, log) {
