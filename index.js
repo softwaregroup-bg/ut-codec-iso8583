@@ -1,7 +1,7 @@
 'use strict';
 const merge = require('lodash.merge');
 const defaultFields = require('./fields');
-const bitSyntax = require('../ut-bitsyntax');
+const bitSyntax = require('ut-bitsyntax');
 const template = require('ut-function.template');
 const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
 
