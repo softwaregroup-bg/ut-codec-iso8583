@@ -1,7 +1,7 @@
 'use strict';
 const merge = require('lodash.merge');
 const defaultFields = require('./fields');
-const bitSyntax = require('ut-bitsyntax');
+const bitSyntax = require('../ut-bitsyntax');
 const template = require('ut-function.template');
 const maskSymbol = Buffer.from('*', 'ascii').toString('hex');
 
@@ -248,9 +248,7 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
         fieldSize = 0;
     } else if (builder && builder[0] && builder[0].binhex) {
         fieldSize = Buffer.byteLength(fieldValue, 'hex');
-        if (fieldSize % 8) {
-            fieldSize = fieldSize + 8 - (fieldSize % 8);
-        }
+        fieldSize += fieldSize % 2;
     } else if (builder && builder[0] && builder[0].hexbin) {
         fieldSize = Buffer.byteLength(fieldValue, 'utf-8') * 2;
     } else {
