@@ -247,8 +247,7 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
     } else if (fieldValue == null || !fieldValue.toString) {
         fieldSize = 0;
     } else if (builder && builder[0] && builder[0].binhex) {
-        fieldSize = Buffer.byteLength(fieldValue, 'hex');
-        fieldSize += fieldSize % 2;
+        fieldSize = Buffer.byteLength('0' + fieldValue, 'hex');
     } else if (builder && builder[0] && builder[0].hexbin) {
         fieldSize = Buffer.byteLength(fieldValue, 'utf-8') * 2;
     } else {
