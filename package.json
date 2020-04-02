@@ -1,6 +1,6 @@
 {
   "name": "ut-codec-iso8583",
-  "version": "7.0.4-bcd.4",
+  "version": "7.0.4-bcd.5",
   "main": "./index.js",
   "dependencies": {
     "lodash.merge": "4.6.2",
