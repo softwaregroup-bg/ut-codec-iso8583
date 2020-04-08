@@ -6,11 +6,11 @@
     "lodash.merge": "4.6.2",
     "ut-bitsyntax": "^6.2.4",
     "ut-emv": "^7.0.4",
-    "ut-function.template": "^1.4.0"
+    "ut-function.template": "^1.6.3"
   },
   "devDependencies": {
-    "tap": "^12.7.0",
-    "ut-tools": "^6.33.2",
+    "tap": "^14.10.7",
+    "ut-tools": "^6.33.4",
     "ut-unittest": "^1.1.0"
   },
   "scripts": {
