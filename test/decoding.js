@@ -1,9 +1,9 @@
 const tap = require('tap');
 const {define, get, fetch} = require('ut-unittest/errorApi.js')();
 const errorApi = { getError: get, fetchErrors: fetch, defineError: define };
-const config = require('../config/testData')();
+const config = require('./config/testData')();
 
-const ISO8583Codec = require('../../../index');
+const ISO8583Codec = require('../index');
 const iso8583 = new ISO8583Codec(Object.assign({}, config.messageFormat, errorApi));
 
 const obj = config.decoding.testObjects;

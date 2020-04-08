@@ -118,5 +118,3 @@ Each ISO8583 field is defined in the following object:
  definition_ above**
 - _networkCodeField_ (integer) - ???
 - _mtidRouteMap_ (???) - ???
-
----
