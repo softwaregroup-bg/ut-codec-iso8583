@@ -1,3 +1,14 @@
+## [7.0.4](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v7.0.3...v7.0.4) (2020-04-09)
+
+
+### Bug Fixes
+
+* TAP upgrade ([195bcd8](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/195bcd84a3131ce6d97d69bfafa471cee423ac98))
+* TAP upgrade ([b83d2e0](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/b83d2e0b5b972d16910225f110faeb7b15113b18))
+* TAP upgrade ([ee5bb44](https://github.com/softwaregroup-bg/ut-codec-iso8583/commit/ee5bb4439153f2d2b96d9fa2e00e47fd4c916de5))
+
+
+
 ## [7.0.3](https://github.com/softwaregroup-bg/ut-codec-iso8583/compare/v7.0.2...v7.0.3) (2020-02-24)
 
 
