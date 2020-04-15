@@ -1,11 +1,11 @@
 {
         "version": "0.2.0",
         "configurations": [
-            {
+        {
             "type": "node",
             "request": "launch",
             "name": "Single test",
-            "program": "${workspaceFolder}/test/encoding.js",
+            "program": "${workspaceFolder}/test/${input:unitTest}",
             "runtimeArgs": [
                 "--preserve-symlinks",
                 "--nolazy",
@@ -48,5 +48,16 @@
                 "protocol": "inspector"
             }
         }
-        ]
+        ],
+        "inputs": [{
+            "id": "unitTest",
+            "type": "pickString",
+            "description": "Pick test to run",
+            "options": [
+                "bitmaps.test",
+                "bufferMask.test",
+                "decoding.test",
+                "encoding.test",
+            ]
+        }]
     }
