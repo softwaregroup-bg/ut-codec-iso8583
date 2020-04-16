@@ -27,6 +27,26 @@ tap.test('encode message object without field 11 to buffer - test context', (t) 
     t.same(context, obj.contextWithoutField11, 'test meta object');
     t.end();
 });
+tap.test('encode message object to buffer - all fields + EMV tags', (t) => {
+    const meta = {};
+    const context = {};
+    const log = {};
+    t.same(iso8583.encode(obj.allFieldsEMV, meta, context, log), Buffer.from(buff.allFieldsEMV, 'hex'), 'encode all fields');
+    t.same(meta, obj.metaAllFieldsEMV, 'test meta object');
+    t.same(context, obj.empty, 'test context object');
+    t.end();
+});
+tap.test('encode message object to buffer - without field 11, max trace', (t) => {
+    const meta = {};
+    const context = {
+        trace: 1000000
+    };
+    const log = {};
+    t.same(iso8583.encode(obj.withoutField11MaxTrace, meta, context, log), Buffer.from(buff.withoutField11, 'hex'), 'encode all fields');
+    t.same(meta, obj.metaWithoutField11, 'test meta object');
+    t.same(context, obj.maxTrace, 'test context object');
+    t.end();
+});
 iso8583.fieldFormat.footer = {size: 8, name: 'Footer', format: 'string'};
 iso8583.fieldFormat.header = {size: 8, name: 'Header', format: 'string'};
 tap.test('encode message object to buffer - all fields + header +  footer', (t) => {
