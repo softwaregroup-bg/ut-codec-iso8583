@@ -247,7 +247,7 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
     } else if (fieldValue == null || !fieldValue.toString) {
         fieldSize = 0;
     } else if (builder && builder[0] && builder[0].binhex) {
-        fieldSize = Buffer.byteLength(fieldValue, 'hex');
+        fieldSize = Buffer.byteLength('0' + fieldValue, 'hex');
     } else if (builder && builder[0] && builder[0].hexbin) {
         fieldSize = Buffer.byteLength(fieldValue, 'utf-8') * 2;
     } else {
@@ -258,7 +258,11 @@ Iso8583.prototype.encodeField = function(fieldName, fieldValue) {
         fieldSize
     });
     const factor = this.fieldFormat[fieldName].prefixFactor || 1;
-    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {prefix: field.length * factor}), field]) : field;
+    let prefix = field.length * factor;
+    if (builder[0].binhex && fieldValue.length !== prefix && factor === 2) {
+        prefix = fieldValue.length;
+    }
+    return prefixBuilder ? Buffer.concat([bitSyntax.build(prefixBuilder, {prefix}), field]) : field;
 };
 
 Iso8583.prototype.encode = function(message, $meta, context, log) {
